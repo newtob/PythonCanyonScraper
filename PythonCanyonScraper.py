@@ -42,15 +42,51 @@ def parseSearch(raw_html):
     html = BeautifulSoup(raw_html, 'html.parser')
 
     for s in html.select('span'):
+        BikeName, OrigPrice, SalePrice = None, None, None
         if s.text.startswith("\\n                Aeroad"):
             BikeName = s.text.replace("\\n", "").strip()
-            OrigPrice = html.find("span", "productTile__productPriceOriginal").text.replace("\\n", "").strip()
-            SalePrice = html.find("span", "productTile__productPriceSale").text.replace("\\n", "").strip()
+            #OrigPrice = html.find("span", "productTile__productPriceOriginal").text.replace("\\n", "").strip()
+            #SalePrice = html.find("span", "productTile__productPriceSale").text.replace("\\n", "").strip()
+            # try:
+            #     OrigPrice = s.find("span", "productTile__productPriceOriginal").text.replace("\\n", "").strip()
+            #     SalePrice = s.find("span", "productTile__productPriceSale").text.replace("\\n", "").strip()
+            # except AttributeError as e:
+            #     OrigPrice, SalePrice = None, None
+            #     print(e)
+
+            # print(s.next_element.next_element.next_element.contents)
+            for i, child in enumerate(s.next_element.next_element.next_element.children):
+                if child.name == "span":
+                    #print('found a new span ' + str(i) )
+                    #print(child.text.replace("\\n", "").strip())
+                    if i == 1 or i == 3:
+                        OrigPricelist.append(child.text.replace("\\n", "").strip())
+
+
+
+            # for element in s.next_elements:
+            #     if element.name == "span":
+            #         #print('.', end='')
+            #         #print(element.name, end='')
+            #         print(element.attrs)
+            #         if element.span['class'] == "productTile__productPriceOriginal":
+            #             print(',', end='')
+            #             print (element.string)
+            #         #print('.', end='')
+
+                # if element.name == "span":
+                #     print( element['class'])
+
+
 
             BikeNamelist.append(BikeName)
             OrigPricelist.append(OrigPrice)
             SalePricelist.append(SalePrice)
-            print(BikeName)
+        #if BikeName == None:
+        #    print('.', end = '')
+        #else:
+        #    print(BikeName)
+    #print("\nloop finished with the final " + str(BikeName))
     # try:
     #     BikeName
     # except NameError:
@@ -71,16 +107,20 @@ def main():
     else:
         raw_html = str(simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M'))
         raw_max_html = str(simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_outlet&prefv1=true'))
+        if raw_html == None or raw_max_html == None:
+            print("no return from website")
+
         print("raw html coming out next: \t" + str(raw_html))
         print("raw html of all bikes   : \t" + str(raw_html))
 
-    print("the raw_html type is : \t" + str(type(raw_html)))
-    print("the raw_max_html type is : \t" + str(type(raw_max_html)))
-
+    #print("the raw_html type is : \t" + str(type(raw_html)))
+    #print("the raw_max_html type is : \t" + str(type(raw_max_html)))
 
     print("Aeroad only: \t" + str(parseSearch(raw_html)))
+    #
     print("All bikes: \t\t" + str(parseSearch(raw_max_html)))
 
+    #TODO output these two lists to a database
 
 if __name__ == "__main__":
     test = True
