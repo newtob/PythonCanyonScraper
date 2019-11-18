@@ -44,18 +44,16 @@ def parseSearch(raw_html):
         BikeName, OrigPrice, SalePrice = None, None, None
         if s.text.startswith("\\n                Aeroad"):
             BikeName = s.text.replace("\\n", "").strip()
-
+            BikeNamelist.append(BikeName)
             for i, child in enumerate(s.next_element.next_element.next_element.children):
                 if child.name == "span":
                     #print('found a new span ' + str(i) )
                     #print(child.text.replace("\\n", "").strip())
-                    if i == 1 or i == 3:
+                    if i == 1:
                         OrigPricelist.append(child.text.replace("\\n", "").strip())
+                    if i == 3:
+                        SalePricelist.append(child.text.replace("\\n", "").strip())
 
-
-            BikeNamelist.append(BikeName)
-            OrigPricelist.append(OrigPrice)
-            SalePricelist.append(SalePrice)
 
     myTimeStamp = str(datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc))
 
@@ -72,8 +70,14 @@ def main():
     else:
         raw_html = str(simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M'))
         raw_max_html = str(simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_outlet&prefv1=true'))
+
         if raw_html == None or raw_max_html == None:
             print("no return from website")
+        else:
+            with open("./latestAeroadSizeM.html", 'w') as out_file:
+                out_file.writelines(raw_html)
+            with open("./latestAllBikes.html", 'w') as out_max_file:
+                out_max_file.writelines(raw_max_html)
 
         print("raw html coming out next: \t" + str(raw_html))
         print("raw html of all bikes   : \t" + str(raw_html))
@@ -88,6 +92,6 @@ def main():
     #TODO output these two lists to a database
 
 if __name__ == "__main__":
-    test = True
-    #test = False
+    #test = True
+    test = False
     main()
