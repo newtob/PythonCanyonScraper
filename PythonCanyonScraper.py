@@ -11,7 +11,9 @@ def simple_get(url):
     try:
         with closing(get(url, stream=True)) as resp:
             if is_good_response(resp):
-                return resp.content
+                #TODO response.text
+                return resp.text
+
             else:
                 return None
 
@@ -70,6 +72,7 @@ def main():
     else:
         raw_html = str(simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M'))
         raw_max_html = str(simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_outlet&prefv1=true'))
+
 
         if raw_html == None or raw_max_html == None:
             print("no return from website")
