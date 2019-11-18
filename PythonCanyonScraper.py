@@ -3,7 +3,6 @@ from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup
 import datetime
-#from datetime import datetime
 
 
 def simple_get(url):
@@ -45,16 +44,7 @@ def parseSearch(raw_html):
         BikeName, OrigPrice, SalePrice = None, None, None
         if s.text.startswith("\\n                Aeroad"):
             BikeName = s.text.replace("\\n", "").strip()
-            #OrigPrice = html.find("span", "productTile__productPriceOriginal").text.replace("\\n", "").strip()
-            #SalePrice = html.find("span", "productTile__productPriceSale").text.replace("\\n", "").strip()
-            # try:
-            #     OrigPrice = s.find("span", "productTile__productPriceOriginal").text.replace("\\n", "").strip()
-            #     SalePrice = s.find("span", "productTile__productPriceSale").text.replace("\\n", "").strip()
-            # except AttributeError as e:
-            #     OrigPrice, SalePrice = None, None
-            #     print(e)
 
-            # print(s.next_element.next_element.next_element.contents)
             for i, child in enumerate(s.next_element.next_element.next_element.children):
                 if child.name == "span":
                     #print('found a new span ' + str(i) )
@@ -63,34 +53,9 @@ def parseSearch(raw_html):
                         OrigPricelist.append(child.text.replace("\\n", "").strip())
 
 
-
-            # for element in s.next_elements:
-            #     if element.name == "span":
-            #         #print('.', end='')
-            #         #print(element.name, end='')
-            #         print(element.attrs)
-            #         if element.span['class'] == "productTile__productPriceOriginal":
-            #             print(',', end='')
-            #             print (element.string)
-            #         #print('.', end='')
-
-                # if element.name == "span":
-                #     print( element['class'])
-
-
-
             BikeNamelist.append(BikeName)
             OrigPricelist.append(OrigPrice)
             SalePricelist.append(SalePrice)
-        #if BikeName == None:
-        #    print('.', end = '')
-        #else:
-        #    print(BikeName)
-    #print("\nloop finished with the final " + str(BikeName))
-    # try:
-    #     BikeName
-    # except NameError:
-    #     BikeName, OrigPrice, SalePrice = None, None, None
 
     myTimeStamp = str(datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc))
 
