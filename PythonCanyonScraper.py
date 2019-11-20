@@ -11,7 +11,7 @@ def simple_get(url):
     try:
         with closing(get(url, stream=True)) as resp:
             if is_good_response(resp):
-                #TODO response.text
+                #TODO response.text vs response.content
                 return resp.text
 
             else:
@@ -40,7 +40,11 @@ def parseSearch(raw_html):
     TODO: search for non Aeraod models"""
 
     BikeNamelist, OrigPricelist, SalePricelist = [], [], []
-    html = BeautifulSoup(raw_html, 'html.parser')
+    try:
+        html = BeautifulSoup(raw_html, 'html.parser')
+    except TypeError as e:
+        print("Type Error parsing raw html = " + e)
+        exit(-1)
 
     for s in html.select('span'):
         BikeName, OrigPrice, SalePrice = None, None, None
@@ -70,9 +74,8 @@ def main():
         with open('examplePageAllBikes.html', 'r') as fileAll:
             raw_max_html = str(fileAll.read())
     else:
-        raw_html = str(simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M'))
-        raw_max_html = str(simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_outlet&prefv1=true'))
-
+        raw_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M')
+        raw_max_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_outlet&prefv1=true')
 
         if raw_html == None or raw_max_html == None:
             print("no return from website")
@@ -82,8 +85,8 @@ def main():
             with open("./latestAllBikes.html", 'w') as out_max_file:
                 out_max_file.writelines(raw_max_html)
 
-        print("raw html coming out next: \t" + str(raw_html))
-        print("raw html of all bikes   : \t" + str(raw_html))
+        #print("raw html coming out next: \t" + str(raw_html))
+        #print("raw html of all bikes   : \t" + str(raw_html))
 
     #print("the raw_html type is : \t" + str(type(raw_html)))
     #print("the raw_max_html type is : \t" + str(type(raw_max_html)))
