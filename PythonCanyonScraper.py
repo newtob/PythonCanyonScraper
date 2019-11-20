@@ -11,12 +11,10 @@ def simple_get(url):
     try:
         with closing(get(url, stream=True)) as resp:
             if is_good_response(resp):
-                #TODO response.text vs response.content
+                # TODO response.text vs response.content
                 return resp.text
-
             else:
                 return None
-
     except RequestException as e:
         log_error('Error during requests to {0} : {1}'.format(url, str(e)))
         return None
@@ -36,8 +34,8 @@ def log_error(e):
 
 
 def parseSearch(raw_html):
-    """Find three elements in the webpage, bike name, orig price and sale price, output them
-    TODO: search for non Aeraod models"""
+    """Find three elements in the web page, bike name, orig price and sale price, output them
+    TODO: make search for non Aeraod models work"""
 
     BikeNamelist, OrigPricelist, SalePricelist = [], [], []
     try:
@@ -47,27 +45,46 @@ def parseSearch(raw_html):
         exit(-1)
 
     for s in html.select('span'):
-        BikeName, OrigPrice, SalePrice = None, None, None
-        if s.text.startswith("\\n                Aeroad"):
-            BikeName = s.text.replace("\\n", "").strip()
-            BikeNamelist.append(BikeName)
-            for i, child in enumerate(s.next_element.next_element.next_element.children):
-                if child.name == "span":
-                    #print('found a new span ' + str(i) )
-                    #print(child.text.replace("\\n", "").strip())
-                    if i == 1:
-                        OrigPricelist.append(child.text.replace("\\n", "").strip())
-                    if i == 3:
-                        SalePricelist.append(child.text.replace("\\n", "").strip())
 
+        #print ("span class is : " + str(s.get('class')))
+        if s.get('class') is not None:
+            #print("0 = " + str(s.get('class')[0]))
 
+            if 'productTile__productName' in s.get('class'):
+                #print("found a productTile__productName" + s.text.replace("\\n", "").strip())
+                BikeName = None
+                BikeName = s.text.replace("\\n", "").strip()
+                BikeNamelist.append(BikeName)
+                for i, child in enumerate(s.next_element.next_element.next_element.children):
+                    if child.name == "span":
+                        # print('found a new span ' + str(i) )
+                        # print(child.text.replace("\\n", "").strip())
+                        if i == 1:
+                            OrigPricelist.append(child.text.replace("\\n", "").strip())
+                        if i == 3:
+                            SalePricelist.append(child.text.replace("\\n", "").strip())
+
+    #     if s.text.startswith("\\n                Aeroad"):
+    #         BikeName = None
+    #         BikeName = s.text.replace("\\n", "").strip()
+    #         BikeNamelist.append(BikeName)
+    #         for i, child in enumerate(s.next_element.next_element.next_element.children):
+    #             if child.name == "span":
+    #                 # print('found a new span ' + str(i) )
+    #                 # print(child.text.replace("\\n", "").strip())
+    #                 if i == 1:
+    #                     OrigPricelist.append(child.text.replace("\\n", "").strip())
+    #                 if i == 3:
+    #                     SalePricelist.append(child.text.replace("\\n", "").strip())
+    #
     myTimeStamp = str(datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc))
-
     return BikeNamelist, OrigPricelist, SalePricelist, myTimeStamp
 
 
 def main():
-    """main method"""
+    """main method, checks to see if its an off line 'test' or if it needs to get data from the web.
+    Saves a new set of html if it does go out to get it.
+    Parses the output and should then save to cloud db."""
     if test:
         with open('examplePageAeroadSizeM.html', 'r') as file:
             raw_html = str(file.read())
@@ -76,28 +93,28 @@ def main():
     else:
         raw_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M')
         raw_max_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_outlet&prefv1=true')
-
-        if raw_html == None or raw_max_html == None:
+        if raw_html is None or raw_max_html is None:
             print("no return from website")
+            exit(-1)
         else:
             with open("./latestAeroadSizeM.html", 'w') as out_file:
                 out_file.writelines(raw_html)
             with open("./latestAllBikes.html", 'w') as out_max_file:
                 out_max_file.writelines(raw_max_html)
 
-        #print("raw html coming out next: \t" + str(raw_html))
-        #print("raw html of all bikes   : \t" + str(raw_html))
+        # print("raw html coming out next: \t" + str(raw_html))
+        # print("raw html of all bikes   : \t" + str(raw_html))
 
-    #print("the raw_html type is : \t" + str(type(raw_html)))
-    #print("the raw_max_html type is : \t" + str(type(raw_max_html)))
+    # print("the raw_html type is : \t" + str(type(raw_html)))
+    # print("the raw_max_html type is : \t" + str(type(raw_max_html)))
 
     print("Aeroad only: \t" + str(parseSearch(raw_html)))
-    #
     print("All bikes: \t\t" + str(parseSearch(raw_max_html)))
 
-    #TODO output these two lists to a database
+    # TODO output these two lists to a database
+
 
 if __name__ == "__main__":
-    #test = True
-    test = False
+    test = True
+    #test = False
     main()
