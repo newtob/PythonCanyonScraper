@@ -2,6 +2,7 @@ from requests import get
 from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup
+from google.cloud import bigquery
 import datetime
 
 
@@ -41,7 +42,7 @@ def parseSearch(raw_html):
     bikeDataListofLists = []
     BikeNamelist, OrigPricelist, SalePricelist = [], [], []
     try:
-        html = BeautifulSoup(raw_html, 'html.parser')
+        html: BeautifulSoup = BeautifulSoup(raw_html, 'html.parser')
     except TypeError as e:
         print("Type Error parsing raw html = " + e)
         exit(-1)
@@ -69,9 +70,10 @@ def parseSearch(raw_html):
                             bikeDataInfoList.insert(3, child.text.replace("\\n", "").strip())
                 if bikeDataInfoList is not None:
                     # for i in bikeDataInfoList:
-                        # print(str(i))
+                    #     print(str(i))
                     if bikeDataInfoList[1] is not None and bikeDataInfoList[2] is not None:
-                        bikeDataInfoList.insert(4, str(datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)))
+                        insertTimeStamp = (datetime.datetime.now())
+                        bikeDataInfoList.insert(4, insertTimeStamp)
 
                         bikeDataListofLists.append(bikeDataInfoList)
                     else:
@@ -83,11 +85,36 @@ def parseSearch(raw_html):
     # myTimeStamp = str(datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc))
     # return BikeNamelist, OrigPricelist, SalePricelist, myTimeStamp
 
-def InsertintoDB(Bikelist):
+def checkBikeIsntLoadedAlready(bikeData, client):
+    """lkjsdf"""
+
+    # Perform a query.
+    QUERY = (
+        'SELECT UID FROM `CanyonOutletBikeSaleData.CanyonOutletBikeSaleDataTable` ')
+    query_job = client.query(QUERY)  # API request
+    rows = query_job.result()  # Waits for query to finish
+
+    for row in rows:
+        print(row.UID)
+
+    # TODO figure out what UID's are new
+    return bikeData
+
+def InsertintoDB(Bikelist, client):
     """take a list of bike sales, output them into the DB
     Setup DB connection, for loop through insert rows"""
 
-    print(len(Bikelist))
+    print("InsertintoDB: starting InsertintoDB method...")
+    table_id = "CanyonOutletBikeSaleData.CanyonOutletBikeSaleDataTable"
+    table = client.get_table(table_id)  # Make an API request.
+    rows_to_insert = Bikelist
+    print("InsertintoDB: setup finished, trying to insert rows...")
+
+    errors = client.insert_rows(table, rows_to_insert)  # Make an API request.
+    if errors != []:
+        print("New rows have not been added, errors = " + str(errors))
+    else:
+        print("rows inserted = " + str(len(Bikelist)))
 
     return True
 
@@ -121,10 +148,14 @@ def main():
 
     # this doesn't work now, need to re-implement the Aeroad search later on.
     # print("Aeroad only: \t" + str(parseSearch(raw_html)))
-    print("All bikes: \t\t" + str(parseSearch(raw_max_html)))
-    BikelistToInsert = parseSearch(raw_max_html)
-    # TODO check that bike data isn't already there.
-    InsertintoDB(BikelistToInsert)
+    # print("All bikes: \t\t" + str(parseSearch(raw_max_html)))
+    BikelistToCheck = parseSearch(raw_max_html)
+    print(BikelistToCheck)
+    client = bigquery.Client.from_service_account_json('./canyonscraper-54d54af48066.json')
+    BikelistToInsert = checkBikeIsntLoadedAlready(BikelistToCheck, client)
+
+    # InsertintoDB(BikelistToInsert, client)
+
 
 if __name__ == "__main__":
     test = True
