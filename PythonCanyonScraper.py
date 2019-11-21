@@ -6,7 +6,7 @@ from google.cloud import bigquery
 import datetime
 
 
-def simple_get(url):
+def simple_get(url: str) -> str:
     """Attempts to get the content at `url` by making an HTTP GET request.
     If the content-type of response is some kind of HTML/XML, return the text content, otherwise return None."""
     try:
@@ -15,10 +15,10 @@ def simple_get(url):
                 # TODO response.text vs response.content
                 return resp.text
             else:
-                return None
+                return "none"
     except RequestException as e:
         log_error('Error during requests to {0} : {1}'.format(url, str(e)))
-        return None
+        return "none"
 
 
 def is_good_response(resp):
@@ -29,15 +29,15 @@ def is_good_response(resp):
             and content_type.find('html') > -1)
 
 
-def log_error(e):
+def log_error(e) -> None:
     """TODO: do something else with a HTML requests error"""
     print(e)
 
 
-def parseSearch(raw_html):
+def parseSearch(raw_html: str) -> list:
     """Find three elements in the web page, bike name, orig price and sale price, output them
     data struct is a list of the following:[UID, BikeName, orig price, sale price, date found]
-    TODO: make search for non Aeraod models work"""
+    TODO: make search for Aeraod size M models work"""
 
     bikeDataListofLists = []
     BikeNamelist, OrigPricelist, SalePricelist = [], [], []
@@ -80,11 +80,6 @@ def parseSearch(raw_html):
                         print("partial scape, got one of orig price or sale price, but not both")
     return bikeDataListofLists
 
-    # for i in bikeDataListofLists:
-    #    print (str(i))
-    # myTimeStamp = str(datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc))
-    # return BikeNamelist, OrigPricelist, SalePricelist, myTimeStamp
-
 
 def checkBikeIsntLoadedAlready(bikeData: list, client: bigquery.client.Client) -> list:
     """Gets the UID's from the database and checks the newly scraped UID's, returning only the new ones"""
@@ -105,7 +100,7 @@ def checkBikeIsntLoadedAlready(bikeData: list, client: bigquery.client.Client) -
     return UniqueBikestoAdd
 
 
-def InsertintoDB(Bikelist, client):
+def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
     """take a list of bike sales, output them into the DB
     Setup DB connection, for loop through insert rows"""
 
@@ -124,7 +119,7 @@ def InsertintoDB(Bikelist, client):
     return True
 
 
-def main():
+def main() -> None:
     """main method, checks to see if its an off line 'test' or if it needs to get data from the web.
     Saves a new set of html if it does go out to get it.
     Parses the output and should then save to cloud db."""
@@ -136,7 +131,7 @@ def main():
     else:
         raw_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M')
         raw_max_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_outlet&prefv1=true')
-        if raw_html is None or raw_max_html is None:
+        if raw_html == "none" or raw_max_html == "none":
             print("no return from website")
             exit(-1)
         else:
@@ -151,9 +146,6 @@ def main():
     # print("the raw_html type is : \t" + str(type(raw_html)))
     # print("the raw_max_html type is : \t" + str(type(raw_max_html)))
 
-    # this doesn't work now, need to re-implement the Aeroad search later on.
-    # print("Aeroad only: \t" + str(parseSearch(raw_html)))
-    # print("All bikes: \t\t" + str(parseSearch(raw_max_html)))
     BikelistToCheck = parseSearch(raw_max_html)
     # print(BikelistToCheck)
     client = bigquery.Client.from_service_account_json('./canyonscraper-54d54af48066.json')
