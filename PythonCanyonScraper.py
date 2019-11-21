@@ -35,8 +35,10 @@ def log_error(e):
 
 def parseSearch(raw_html):
     """Find three elements in the web page, bike name, orig price and sale price, output them
+    data struct is a list of the following:[UID, BikeName, orig price, sale price, date found]
     TODO: make search for non Aeraod models work"""
 
+    bikeDataListofLists = []
     BikeNamelist, OrigPricelist, SalePricelist = [], [], []
     try:
         html = BeautifulSoup(raw_html, 'html.parser')
@@ -45,40 +47,49 @@ def parseSearch(raw_html):
         exit(-1)
 
     for s in html.select('span'):
-
-        #print ("span class is : " + str(s.get('class')))
+        # print ("span class is : " + str(s.get('class')))
         if s.get('class') is not None:
-            #print("0 = " + str(s.get('class')[0]))
+            # print("0 = " + str(s.get('class')[0]))
 
             if 'productTile__productName' in s.get('class'):
-                #print("found a productTile__productName" + s.text.replace("\\n", "").strip())
-                BikeName = None
+                # print("found a productTile__productName" + s.text.replace("\\n", "").strip())
+                bikeDataInfoList = []
+                BikeName, UID = None, None
                 BikeName = s.text.replace("\\n", "").strip()
+                UID = str(s.previous_element.previous_element.previous_element['data-url']).split("=")[2]
+                bikeDataInfoList.insert(0, UID)
+                bikeDataInfoList.insert(1, BikeName)
+
                 BikeNamelist.append(BikeName)
                 for i, child in enumerate(s.next_element.next_element.next_element.children):
                     if child.name == "span":
-                        # print('found a new span ' + str(i) )
-                        # print(child.text.replace("\\n", "").strip())
                         if i == 1:
-                            OrigPricelist.append(child.text.replace("\\n", "").strip())
-                        if i == 3:
-                            SalePricelist.append(child.text.replace("\\n", "").strip())
+                            bikeDataInfoList.insert(2, child.text.replace("\\n", "").strip())
+                        elif i == 3:
+                            bikeDataInfoList.insert(3, child.text.replace("\\n", "").strip())
+                if bikeDataInfoList is not None:
+                    # for i in bikeDataInfoList:
+                        # print(str(i))
+                    if bikeDataInfoList[1] is not None and bikeDataInfoList[2] is not None:
+                        bikeDataInfoList.insert(4, str(datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)))
 
-    #     if s.text.startswith("\\n                Aeroad"):
-    #         BikeName = None
-    #         BikeName = s.text.replace("\\n", "").strip()
-    #         BikeNamelist.append(BikeName)
-    #         for i, child in enumerate(s.next_element.next_element.next_element.children):
-    #             if child.name == "span":
-    #                 # print('found a new span ' + str(i) )
-    #                 # print(child.text.replace("\\n", "").strip())
-    #                 if i == 1:
-    #                     OrigPricelist.append(child.text.replace("\\n", "").strip())
-    #                 if i == 3:
-    #                     SalePricelist.append(child.text.replace("\\n", "").strip())
-    #
-    myTimeStamp = str(datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc))
-    return BikeNamelist, OrigPricelist, SalePricelist, myTimeStamp
+                        bikeDataListofLists.append(bikeDataInfoList)
+                    else:
+                        print("partial scape, got one of orig price or sale price, but not both")
+    return bikeDataListofLists
+
+    # for i in bikeDataListofLists:
+    #    print (str(i))
+    # myTimeStamp = str(datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc))
+    # return BikeNamelist, OrigPricelist, SalePricelist, myTimeStamp
+
+def InsertintoDB(Bikelist):
+    """take a list of bike sales, output them into the DB
+    Setup DB connection, for loop through insert rows"""
+
+    print(len(Bikelist))
+
+    return True
 
 
 def main():
@@ -108,11 +119,12 @@ def main():
     # print("the raw_html type is : \t" + str(type(raw_html)))
     # print("the raw_max_html type is : \t" + str(type(raw_max_html)))
 
-    print("Aeroad only: \t" + str(parseSearch(raw_html)))
+    # this doesn't work now, need to re-implement the Aeroad search later on.
+    # print("Aeroad only: \t" + str(parseSearch(raw_html)))
     print("All bikes: \t\t" + str(parseSearch(raw_max_html)))
-
-    # TODO output these two lists to a database
-
+    BikelistToInsert = parseSearch(raw_max_html)
+    # TODO check that bike data isn't already there.
+    InsertintoDB(BikelistToInsert)
 
 if __name__ == "__main__":
     test = True
