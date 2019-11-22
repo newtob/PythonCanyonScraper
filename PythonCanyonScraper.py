@@ -48,12 +48,8 @@ def parseSearch(raw_html: str) -> list:
         exit(-1)
 
     for s in html.select('span'):
-        # print ("span class is : " + str(s.get('class')))
-        if s.get('class') is not None:
-            # print("0 = " + str(s.get('class')[0]))
-
-            if 'productTile__productName' in s.get('class'):
-                # print("found a productTile__productName" + s.text.replace("\\n", "").strip())
+        if s.get('class') is not None and 'productTile__productName' in s.get('class'):
+            #if 'productTile__productName' in s.get('class'):
                 bikeDataInfoList = []
                 BikeName, UID = None, None
                 BikeName = s.text.replace("\\n", "").strip()
@@ -119,7 +115,7 @@ def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
     return True
 
 
-def main() -> None:
+def main(client, test) -> None:
     """main method, checks to see if its an off line 'test' or if it needs to get data from the web.
     Saves a new set of html if it does go out to get it.
     Parses the output and should then save to cloud db."""
@@ -148,7 +144,7 @@ def main() -> None:
 
     BikelistToCheck = parseSearch(raw_max_html)
     # print(BikelistToCheck)
-    client = bigquery.Client.from_service_account_json('./canyonscraper-54d54af48066.json')
+
     BikelistToInsert = checkBikeIsntLoadedAlready(BikelistToCheck, client)
     # print(BikelistToInsert)
     if BikelistToInsert:
@@ -157,5 +153,11 @@ def main() -> None:
 
 if __name__ == "__main__":
     test = True
-    #test = False
-    main()
+    # test = False
+    client = bigquery.Client.from_service_account_json('./canyonscraper-54d54af48066.json')
+    main(client)
+
+def PythonCanyonScraper(event, context) -> None:
+    test = False
+    client = bigquery.Client()
+    main(client, test)
