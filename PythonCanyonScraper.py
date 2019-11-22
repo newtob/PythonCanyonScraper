@@ -115,7 +115,7 @@ def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
     return True
 
 
-def main(client, test) -> None:
+def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
     """main method, checks to see if its an off line 'test' or if it needs to get data from the web.
     Saves a new set of html if it does go out to get it.
     Parses the output and should then save to cloud db."""
@@ -130,7 +130,7 @@ def main(client, test) -> None:
         if raw_html == "none" or raw_max_html == "none":
             print("no return from website")
             exit(-1)
-        else:
+        elif saveHTML:
             with open("./latestAeroadSizeM.html", 'w') as out_file:
                 out_file.writelines(raw_html)
             with open("./latestAllBikes.html", 'w') as out_max_file:
@@ -155,9 +155,9 @@ if __name__ == "__main__":
     test = True
     # test = False
     client = bigquery.Client.from_service_account_json('./canyonscraper-54d54af48066.json')
-    main(client)
+    main(client, test, True)
 
 def PythonCanyonScraper(event, context) -> None:
     test = False
     client = bigquery.Client()
-    main(client, test)
+    main(client, test, False)
