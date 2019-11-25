@@ -10,3 +10,4 @@ python-dateutil>=2.8.0
 requests>=2.22.0
 soupsieve>=1.9.5
 urllib3>=1.25.7
+twilio>=6.33.1
