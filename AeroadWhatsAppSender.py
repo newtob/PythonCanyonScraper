@@ -41,18 +41,20 @@ def parseSearch(raw_html: str) -> list:
 
     bikeDataListofLists: list = []
     BikeNamelist: list = []
-    html: BeautifulSoup = []
+    html = []
     try:
         html = BeautifulSoup(raw_html, 'html.parser')
     except TypeError as e:
         print("Type Error parsing raw html = " + e)
         exit(-1)
 
+    print(html)
+
     for s in html.select('span'):
         if s.get('class') is not None and 'productTile__productName' in s.get('class'):
-            # if 'productTile__productName' in s.get('class'):
-            bikeDataInfoList = []
-            BikeName, UID = None, None
+            bikeDataInfoList: list = []
+            BikeName: str
+            UID: str
             BikeName = s.text.replace("\\n", "").strip()
             UID = str(s.previous_element.previous_element.previous_element['data-url']).split("=")[2]
             bikeDataInfoList.insert(0, UID)
@@ -182,7 +184,7 @@ def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
     else:
         raw_html = simple_get(
             'https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&\
-            prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M')
+            prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=L')
 
         if raw_html == "none":
             print("no return from website")
