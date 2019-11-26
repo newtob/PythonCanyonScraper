@@ -12,7 +12,6 @@ def simple_get(url: str) -> str:
     try:
         with closing(get(url, stream=True)) as resp:
             if is_good_response(resp):
-                # TODO response.text vs response.content
                 return resp.text
             else:
                 return "none"

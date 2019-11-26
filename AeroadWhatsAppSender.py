@@ -14,7 +14,6 @@ def simple_get(url: str) -> str:
     try:
         with closing(get(url, stream=True)) as resp:
             if is_good_response(resp):
-                # TODO response.text vs response.content
                 return resp.text
             else:
                 return "none"
@@ -23,8 +22,8 @@ def simple_get(url: str) -> str:
         return "none"
 
 
-def is_good_response(resp):
-    """Returns True if the response seems to be HTML, False otherwise.    """
+def is_good_response(resp) -> bool:
+    """Returns True if the response seems to be HTML, False otherwise."""
     content_type = resp.headers['Content-Type'].lower()
     return (resp.status_code == 200
             and content_type is not None
@@ -38,13 +37,13 @@ def log_error(e) -> None:
 
 def parseSearch(raw_html: str) -> list:
     """Find three elements in the web page, bike name, orig price and sale price, output them
-    data struct is a list of the following:[UID, BikeName, orig price, sale price, date found]
-    TODO: make search for Aeraod size M models work"""
+    data struct is a list of the following:[UID, BikeName, orig price, sale price, date found]"""
 
-    bikeDataListofLists = []
-    BikeNamelist, OrigPricelist, SalePricelist = [], [], []
+    bikeDataListofLists: list = []
+    BikeNamelist: list = []
+    html: BeautifulSoup = []
     try:
-        html: BeautifulSoup = BeautifulSoup(raw_html, 'html.parser')
+        html = BeautifulSoup(raw_html, 'html.parser')
     except TypeError as e:
         print("Type Error parsing raw html = " + e)
         exit(-1)
@@ -99,7 +98,8 @@ def checkBikeIsntLoadedAlready(bikeData: list, client: bigquery.client.Client) -
 
 
 def BikelisttoSMS(bikelist: list) -> bool:
-    """sample from https://www.twilio.com/docs/sms/twiml"""
+    """sample from https://www.twilio.com/docs/sms/twiml
+    SAMPLE DOESNT WORK. NOT REQUIRED, USE SMSAdvanced Method"""
 
     for bike in bikelist:
         if bike[1]:
@@ -124,23 +124,29 @@ def BikelisttoSMSAdvanced(bikelist: list) -> bool:
     # Your Account Sid and Auth Token from twilio.com/console
     # DANGER! This is insecure. See http://twil.io/secure
     account_sid = 'AC466560e3a5db18f39b3943c401183e48'
-    auth_token = '86ea23282a969a837acb67bb6bd09e41'
+    # TODO fix this auth_token with CI/CD integration
+    auth_token = ''
     SMSclient = Client(account_sid, auth_token)
+    message: SMSclient
 
     for bike in bikelist:
         if bike[1]:
-            messageData = "a new " + str(bike[1]) + " has appeared, Size M"
+            messageData = "a new " + str(bike[1]) + " has appeared on sale for " + bike[3] + " Size M"
 
             message = SMSclient.messages \
                 .create(
                 body=messageData,
                 from_='+16506459228',
                 to='+447823772665')
+            print("complete, exiting after just 1")
+            # TODO remove below return
+            return True
 
     print(message.sid)
+    return True
 
 
-def BikelisttoMessage(bikelist: list) -> bool:
+def BikelisttoWhatsAppMessage(bikelist: list) -> bool:
     """Sends bikes to Whatapp via Twilio in a for loop"""
     print(" Bike list to message ")
     print(bikelist)
@@ -165,7 +171,7 @@ def BikelisttoMessage(bikelist: list) -> bool:
         else:
             print("no bike name in list")
 
-    # TODO delete the returns above
+    # TODO delete the 2 returns above
     return True
 
 
@@ -178,9 +184,6 @@ def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
             raw_html = str(file.read())
         with open('examplePageAllBikes.html', 'r') as fileAll:
             raw_max_html = str(fileAll.read())
-        # TODO remove me
-        with open('examplePageAllBikes.html', 'r') as fileAll:
-            raw_html = str(fileAll.read())
     else:
         raw_html = simple_get(
             'https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M')
@@ -195,28 +198,28 @@ def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
             with open("./latestAllBikes.html", 'w') as out_max_file:
                 out_max_file.writelines(raw_max_html)
 
-    # # TODO working code below 4 lines ##########
-    # BikelistToCheck = parseSearch(raw_html)
-    # # print(BikelistToCheck)
-    # BikelistToWhatsApp = checkBikeIsntLoadedAlready(BikelistToCheck, client)
-    # BikelisttoMessage(BikelistToWhatsApp)
+    # TODO working code below 4 lines ##########
+    BikelistToCheck = parseSearch(raw_html)
+    print("Bikelist to check")
+    print(BikelistToCheck)
+    BikelistToMessage = checkBikeIsntLoadedAlready(BikelistToCheck, client)
+    print("Bikelist to SMS")
+    print(BikelistToMessage)
+    BikelisttoSMSAdvanced(BikelistToMessage)
 
-    # TODO Remove Test code while i don't have the API json key
-    # print(BikelisttoMessage(parseSearch(raw_html)))
-    # print(BikelisttoSMS(parseSearch(raw_html)))
-    print(BikelisttoSMSAdvanced(parseSearch(raw_html)))
+    # Test code if API json key isn't accessible
+    # print(BikelisttoSMSAdvanced(parseSearch(raw_html)))
 
 
 if __name__ == "__main__":
     test = True
     # test = False
-    ######### TODO put this next line back in!! and remove the client = None ######
-    # client = bigquery.Client.from_service_account_json('./canyonscraper-54d54af48066.json')
-    client = None
-    main(client, test, True)
+    myClient = bigquery.Client.from_service_account_json('./canyonscraper-54d54af48066.json')
+    main(myClient, test, True)
 
 
 def PythonCanyonScraper(event, context) -> None:
-    test = False
+    """Launch method for Cloud Function"""
+    Prod_test = False
     client = bigquery.Client()
-    main(client, test, False)
+    main(client, Prod_test, False)
