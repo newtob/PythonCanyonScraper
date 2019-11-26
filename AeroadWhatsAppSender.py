@@ -41,14 +41,12 @@ def parseSearch(raw_html: str) -> list:
 
     bikeDataListofLists: list = []
     BikeNamelist: list = []
-    html = []
+    html: BeautifulSoup
     try:
         html = BeautifulSoup(raw_html, 'html.parser')
     except TypeError as e:
         print("Type Error parsing raw html = " + e)
         exit(-1)
-
-    print(html)
 
     for s in html.select('span'):
         if s.get('class') is not None and 'productTile__productName' in s.get('class'):
@@ -125,7 +123,7 @@ def BikelisttoSMSAdvanced(bikelist: list) -> bool:
     # DANGER! This is insecure. See http://twil.io/secure
     account_sid = 'AC466560e3a5db18f39b3943c401183e48'
     # TODO fix this auth_token with CI/CD integration
-    auth_token = ''
+    auth_token = '47bb69bb7f0fb03c1eaa1bd08828628c'
     SMSclient = Client(account_sid, auth_token)
     message: SMSclient
 

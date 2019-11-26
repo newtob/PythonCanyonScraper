@@ -4,6 +4,7 @@ from contextlib import closing
 from bs4 import BeautifulSoup
 from google.cloud import bigquery
 import datetime
+from twilio.rest import Client
 
 
 def simple_get(url: str) -> str:
@@ -20,8 +21,8 @@ def simple_get(url: str) -> str:
         return "none"
 
 
-def is_good_response(resp):
-    """Returns True if the response seems to be HTML, False otherwise.    """
+def is_good_response(resp) -> bool:
+    """Returns True if the response seems to be HTML, False otherwise."""
     content_type = resp.headers['Content-Type'].lower()
     return (resp.status_code == 200
             and content_type is not None
@@ -38,41 +39,42 @@ def parseSearch(raw_html: str) -> list:
     data struct is a list of the following:[UID, BikeName, orig price, sale price, date found]
     TODO: make search for Aeraod size M models work"""
 
-    bikeDataListofLists = []
-    BikeNamelist, OrigPricelist, SalePricelist = [], [], []
+    bikeDataListofLists: list = []
+    BikeNamelist: list = []
+    html: BeautifulSoup
     try:
-        html: BeautifulSoup = BeautifulSoup(raw_html, 'html.parser')
+        html = BeautifulSoup(raw_html, 'html.parser')
     except TypeError as e:
         print("Type Error parsing raw html = " + e)
         exit(-1)
 
     for s in html.select('span'):
         if s.get('class') is not None and 'productTile__productName' in s.get('class'):
-            #if 'productTile__productName' in s.get('class'):
-                bikeDataInfoList = []
-                BikeName, UID = None, None
-                BikeName = s.text.replace("\\n", "").strip()
-                UID = str(s.previous_element.previous_element.previous_element['data-url']).split("=")[2]
-                bikeDataInfoList.insert(0, UID)
-                bikeDataInfoList.insert(1, BikeName)
+            bikeDataInfoList: list = []
+            BikeName: str
+            UID: str
+            BikeName = s.text.replace("\\n", "").strip()
+            UID = str(s.previous_element.previous_element.previous_element['data-url']).split("=")[2]
+            bikeDataInfoList.insert(0, UID)
+            bikeDataInfoList.insert(1, BikeName)
 
-                BikeNamelist.append(BikeName)
-                for i, child in enumerate(s.next_element.next_element.next_element.children):
-                    if child.name == "span":
-                        if i == 1:
-                            bikeDataInfoList.insert(2, child.text.replace("\\n", "").strip())
-                        elif i == 3:
-                            bikeDataInfoList.insert(3, child.text.replace("\\n", "").strip())
-                if bikeDataInfoList is not None:
-                    # for i in bikeDataInfoList:
-                    #     print(str(i))
-                    if bikeDataInfoList[1] is not None and bikeDataInfoList[2] is not None:
-                        insertTimeStamp = (datetime.datetime.now())
-                        bikeDataInfoList.insert(4, insertTimeStamp)
+            BikeNamelist.append(BikeName)
+            for i, child in enumerate(s.next_element.next_element.next_element.children):
+                if child.name == "span":
+                    if i == 1:
+                        bikeDataInfoList.insert(2, child.text.replace("\\n", "").strip())
+                    elif i == 3:
+                        bikeDataInfoList.insert(3, child.text.replace("\\n", "").strip())
+            if bikeDataInfoList is not None:
+                # for i in bikeDataInfoList:
+                #     print(str(i))
+                if bikeDataInfoList[1] is not None and bikeDataInfoList[2] is not None:
+                    insertTimeStamp = (datetime.datetime.now())
+                    bikeDataInfoList.insert(4, insertTimeStamp)
 
-                        bikeDataListofLists.append(bikeDataInfoList)
-                    else:
-                        print("partial scape, got one of orig price or sale price, but not both")
+                    bikeDataListofLists.append(bikeDataInfoList)
+                else:
+                    print("partial scape, got one of orig price or sale price, but not both")
     return bikeDataListofLists
 
 
@@ -114,6 +116,31 @@ def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
     return True
 
 
+def BikelisttoSMSAdvanced(bikelist: list) -> bool:
+    """from this page: https://www.twilio.com/docs/sms/quickstart/python"""
+
+    # Your Account Sid and Auth Token from twilio.com/console
+    # DANGER! This is insecure. See http://twil.io/secure
+    account_sid = 'AC466560e3a5db18f39b3943c401183e48'
+    # TODO fix this auth_token with CI/CD integration
+    auth_token = ''
+    SMSclient = Client(account_sid, auth_token)
+    message: SMSclient
+
+    for bike in bikelist:
+        if bike[1]:
+            messageData = "a new " + str(bike[1]) + " has appeared on sale for " + bike[3] + " Size M"
+
+            message = SMSclient.messages \
+                .create(
+                body=messageData,
+                from_='+16506459228',
+                to='+447823772665')
+            print("complete, exiting after just 1")
+            print(message.sid)
+    return True
+
+
 def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
     """main method, checks to see if its an off line 'test' or if it needs to get data from the web.
     Saves a new set of html if it does go out to get it.
@@ -135,17 +162,15 @@ def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
             with open("./latestAllBikes.html", 'w') as out_max_file:
                 out_max_file.writelines(raw_max_html)
 
-        # print("raw html coming out next: \t" + str(raw_html))
-        # print("raw html of all bikes   : \t" + str(raw_html))
+    # Cycle for Aeroad Size M
+    AearoadBikelistToCheck = parseSearch(raw_html)
+    BikelistToSMS = checkBikeIsntLoadedAlready(AearoadBikelistToCheck, client)
+    if checkBikeIsntLoadedAlready:
+        BikelisttoSMSAdvanced(BikelistToSMS)
 
-    # print("the raw_html type is : \t" + str(type(raw_html)))
-    # print("the raw_max_html type is : \t" + str(type(raw_max_html)))
-
+    # Cycle for All bikes
     BikelistToCheck = parseSearch(raw_max_html)
-    # print(BikelistToCheck)
-
     BikelistToInsert = checkBikeIsntLoadedAlready(BikelistToCheck, client)
-    # print(BikelistToInsert)
     if BikelistToInsert:
         InsertintoDB(BikelistToInsert, client)
 
@@ -153,10 +178,12 @@ def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
 if __name__ == "__main__":
     test = True
     # test = False
-    client = bigquery.Client.from_service_account_json('./canyonscraper-54d54af48066.json')
-    main(client, test, True)
+    myClient = bigquery.Client.from_service_account_json('./canyonscraper-54d54af48066.json')
+    main(myClient, test, True)
+
 
 def PythonCanyonScraper(event, context) -> None:
-    test = False
+    """Launch method for Cloud Function"""
+    Prod_test = False
     client = bigquery.Client()
-    main(client, test, False)
+    main(client, Prod_test, False)
