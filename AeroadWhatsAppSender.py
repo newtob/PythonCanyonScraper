@@ -118,8 +118,6 @@ def BikelisttoSMS(bikelist: list) -> bool:
 
 def BikelisttoSMSAdvanced(bikelist: list) -> bool:
     """from this page: https://www.twilio.com/docs/sms/quickstart/python"""
-    print(" Bike list to message ")
-    print(bikelist)
 
     # Your Account Sid and Auth Token from twilio.com/console
     # DANGER! This is insecure. See http://twil.io/secure
@@ -139,10 +137,7 @@ def BikelisttoSMSAdvanced(bikelist: list) -> bool:
                 from_='+16506459228',
                 to='+447823772665')
             print("complete, exiting after just 1")
-            # TODO remove below return
-            return True
-
-    print(message.sid)
+            print(message.sid)
     return True
 
 
@@ -150,6 +145,8 @@ def BikelisttoWhatsAppMessage(bikelist: list) -> bool:
     """Sends bikes to Whatapp via Twilio in a for loop"""
     print(" Bike list to message ")
     print(bikelist)
+    # TODO FIX this auth token too
+    authTokentobeFIXED = ""
 
     for bike in bikelist:
         if bike[1]:
@@ -158,7 +155,7 @@ def BikelisttoWhatsAppMessage(bikelist: list) -> bool:
             try:
                 with closing(post(
                         'https://api.twilio.com/2010-04-01/Accounts/AC466560e3a5db18f39b3943c401183e48/Messages.json',
-                        auth=('AC466560e3a5db18f39b3943c401183e48', '86ea23282a969a837acb67bb6bd09e41'),
+                        auth=('AC466560e3a5db18f39b3943c401183e48', authTokentobeFIXED),
                         data=messageData)) as resp:
                     if is_good_response(resp):
                         print("good response from Twilio whatsapp push")
@@ -182,23 +179,18 @@ def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
     if test:
         with open('examplePageAeroadSizeM.html', 'r') as file:
             raw_html = str(file.read())
-        with open('examplePageAllBikes.html', 'r') as fileAll:
-            raw_max_html = str(fileAll.read())
     else:
         raw_html = simple_get(
-            'https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M')
-        raw_max_html = simple_get(
-            'https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_outlet&prefv1=true')
-        if raw_html == "none" or raw_max_html == "none":
+            'https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&\
+            prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M')
+
+        if raw_html == "none":
             print("no return from website")
             exit(-1)
         elif saveHTML:
             with open("./latestAeroadSizeM.html", 'w') as out_file:
                 out_file.writelines(raw_html)
-            with open("./latestAllBikes.html", 'w') as out_max_file:
-                out_max_file.writelines(raw_max_html)
 
-    # TODO working code below 4 lines ##########
     BikelistToCheck = parseSearch(raw_html)
     print("Bikelist to check")
     print(BikelistToCheck)
@@ -212,8 +204,8 @@ def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
 
 
 if __name__ == "__main__":
-    test = True
-    # test = False
+    # test = True
+    test = False
     myClient = bigquery.Client.from_service_account_json('./canyonscraper-54d54af48066.json')
     main(myClient, test, True)
 
