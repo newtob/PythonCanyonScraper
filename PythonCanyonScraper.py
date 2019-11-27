@@ -3,8 +3,9 @@ from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup
 from google.cloud import bigquery
-import datetime
+import datetime, os
 from twilio.rest import Client
+
 
 
 def simple_get(url: str) -> str:
@@ -36,8 +37,7 @@ def log_error(e) -> None:
 
 def parseSearch(raw_html: str) -> list:
     """Find three elements in the web page, bike name, orig price and sale price, output them
-    data struct is a list of the following:[UID, BikeName, orig price, sale price, date found]
-    TODO: make search for Aeraod size M models work"""
+    data struct is a list of the following:[UID, BikeName, orig price, sale price, date found]"""
 
     bikeDataListofLists: list = []
     BikeNamelist: list = []
@@ -66,15 +66,12 @@ def parseSearch(raw_html: str) -> list:
                     elif i == 3:
                         bikeDataInfoList.insert(3, child.text.replace("\\n", "").strip())
             if bikeDataInfoList is not None:
-                # for i in bikeDataInfoList:
-                #     print(str(i))
                 if bikeDataInfoList[1] is not None and bikeDataInfoList[2] is not None:
                     insertTimeStamp = (datetime.datetime.now())
                     bikeDataInfoList.insert(4, insertTimeStamp)
-
                     bikeDataListofLists.append(bikeDataInfoList)
                 else:
-                    print("partial scape, got one of orig price or sale price, but not both")
+                    print("Error: Found either the orig price or sale price, but not both. Can't parse HTML correctly")
     return bikeDataListofLists
 
 
@@ -99,21 +96,26 @@ def checkBikeIsntLoadedAlready(bikeData: list, client: bigquery.client.Client) -
 
 def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
     """take a list of bike sales, output them into the DB
-    Setup DB connection, for loop through insert rows"""
+    Setup DB connection, for loop through insert rows
+    """
 
-    # print("InsertintoDB: starting InsertintoDB method...")
     table_id = "CanyonOutletBikeSaleData.CanyonOutletBikeSaleDataTable"
     table = client.get_table(table_id)  # Make an API request.
     rows_to_insert = Bikelist
-    # print("InsertintoDB: setup finished, trying to insert rows...")
 
     errors = client.insert_rows(table, rows_to_insert)  # Make an API request.
     if errors != []:
-        print("New rows have not been added, errors = " + str(errors))
+        print("ERROR: New rows have not been added, errors = " + str(errors))
+        return False
     else:
         print("rows inserted = " + str(len(Bikelist)))
+        return True
 
-    return True
+
+def env_vars():
+    """for secrets and CICD"""
+    # return os.environ.get('twilio_auth_token', 'Specified environment variable, twilio_auth_token, is not set.')
+    return os.environ.get('twilio_auth_token', None)
 
 
 def BikelisttoSMSAdvanced(bikelist: list) -> bool:
@@ -122,8 +124,11 @@ def BikelisttoSMSAdvanced(bikelist: list) -> bool:
     # Your Account Sid and Auth Token from twilio.com/console
     # DANGER! This is insecure. See http://twil.io/secure
     account_sid = 'AC466560e3a5db18f39b3943c401183e48'
-    # TODO fix this auth_token with CI/CD integration
-    auth_token = ''
+    # TODO fix this auth_token with CI/CD integration. maybe. use ALLCAPS for env variables
+    auth_token = os.environ.get('twilio_auth_token', None)
+    if auth_token is None:
+        print("auth token f*ed")
+        exit(-1)
     SMSclient = Client(account_sid, auth_token)
     message: SMSclient
 
@@ -136,8 +141,7 @@ def BikelisttoSMSAdvanced(bikelist: list) -> bool:
                 body=messageData,
                 from_='+16506459228',
                 to='+447823772665')
-            print("complete, exiting after just 1")
-            print(message.sid)
+            # print(message.sid)
     return True
 
 
@@ -154,7 +158,7 @@ def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
         raw_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M')
         raw_max_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_outlet&prefv1=true')
         if raw_html == "none" or raw_max_html == "none":
-            print("no return from website")
+            print("Critical error: no return from website")
             exit(-1)
         elif saveHTML:
             with open("./latestAeroadSizeM.html", 'w') as out_file:
