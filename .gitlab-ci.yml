@@ -3,4 +3,4 @@ deploy_static:
   image: google/cloud-sdk
   script:
     - gcloud auth activate-service-account --key-file $serviceaccounttoken
-    - gcloud functions deploy PythonCanyonScraper --region=us-central1 --source=./PythonCanyonScraper.py --runtime=python37 --trigger-topic=CanyonScraperInitiation --service-account=canyon-scraper-service-acc@canyonscraper.iam.gserviceaccount.co --set-env-vars=twilio_auth_token=$twilio_auth_token
+    - gcloud functions deploy PythonCanyonScraper --region=us-central1 --runtime=python37 --trigger-topic=CanyonScraperInitiation --service-account=canyon-scraper-service-acc@canyonscraper.iam.gserviceaccount.com --set-env-vars=twilio_auth_token=$twilio_auth_token
