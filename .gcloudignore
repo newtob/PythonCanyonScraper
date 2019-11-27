@@ -1,0 +1,4 @@
+.gitsecret/keys/random_seed
+!*.secret
+canyonscraper-87198fc61340.json
+*.html
