@@ -124,8 +124,7 @@ def BikelisttoSMSAdvanced(bikelist: list) -> bool:
 
     # Your Account Sid and Auth Token from twilio.com/console
     # DANGER! This is insecure. See http://twil.io/secure
-    account_sid = 'AC466560e3a5db18f39b3943c401183e48'
-    # TODO fix this auth_token with CI/CD integration. maybe. use ALLCAPS for env variables
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID', None)
     auth_token = os.environ.get('twilio_auth_token', None)
     if auth_token is None:
         print("auth token f*ed")
