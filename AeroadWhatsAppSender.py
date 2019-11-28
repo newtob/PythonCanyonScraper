@@ -145,6 +145,7 @@ def BikelisttoWhatsAppMessage(bikelist: list) -> bool:
     print(" Bike list to message ")
     print(bikelist)
     authTokentobeFIXED = os.environ.get('twilio_auth_token', None)
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID', None)
 
     for bike in bikelist:
         if bike[1]:
@@ -152,8 +153,8 @@ def BikelisttoWhatsAppMessage(bikelist: list) -> bool:
             print(messageData)
             try:
                 with closing(post(
-                        'https://api.twilio.com/2010-04-01/Accounts/AC466560e3a5db18f39b3943c401183e48/Messages.json',
-                        auth=('AC466560e3a5db18f39b3943c401183e48', authTokentobeFIXED),
+                        str('https://api.twilio.com/2010-04-01/Accounts/' + account_sid + '/Messages.json'),
+                        auth=(account_sid, authTokentobeFIXED),
                         data=messageData)) as resp:
                     if is_good_response(resp):
                         print("good response from Twilio whatsapp push")
