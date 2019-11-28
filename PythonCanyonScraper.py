@@ -1,11 +1,12 @@
-from requests import get
-from requests.exceptions import RequestException
+import datetime
+import os
 from contextlib import closing
+
 from bs4 import BeautifulSoup
 from google.cloud import bigquery
-import datetime, os
+from requests import get
+from requests.exceptions import RequestException
 from twilio.rest import Client
-
 
 
 def simple_get(url: str) -> str:
@@ -155,8 +156,10 @@ def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
         with open('examplePageAllBikes.html', 'r') as fileAll:
             raw_max_html = str(fileAll.read())
     else:
-        raw_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M')
-        raw_max_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&prefn1=pc_outlet&prefv1=true')
+        raw_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?cgid=outlet-road&\
+        prefn1=pc_familie&prefn2=pc_outlet&prefn3=pc_rahmengroesse&prefv1=Aeroad&prefv2=true&prefv3=M')
+        raw_max_html = simple_get('https://www.canyon.com/en-gb/outlet/road-bikes/?\
+        cgid=outlet-road&prefn1=pc_outlet&prefv1=true')
         if raw_html == "none" or raw_max_html == "none":
             print("Critical error: no return from website")
             exit(-1)
