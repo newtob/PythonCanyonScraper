@@ -123,7 +123,7 @@ def BikelisttoSMSAdvanced(bikelist: list) -> bool:
     # DANGER! This is insecure. See http://twil.io/secure
     account_sid = 'AC466560e3a5db18f39b3943c401183e48'
     # TODO fix this auth_token with CI/CD integration
-    auth_token = '47bb69bb7f0fb03c1eaa1bd08828628c'
+    auth_token = ''
     SMSclient = Client(account_sid, auth_token)
     message: SMSclient
 
