@@ -145,8 +145,7 @@ def BikelisttoWhatsAppMessage(bikelist: list) -> bool:
     """Sends bikes to Whatapp via Twilio in a for loop"""
     print(" Bike list to message ")
     print(bikelist)
-    # TODO FIX this auth token too
-    authTokentobeFIXED = ""
+    authTokentobeFIXED = os.environ.get('twilio_auth_token', None)
 
     for bike in bikelist:
         if bike[1]:
