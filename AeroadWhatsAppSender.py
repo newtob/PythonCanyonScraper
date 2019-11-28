@@ -3,7 +3,7 @@ from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup
 from google.cloud import bigquery
-import datetime
+import datetime, os
 from twilio.twiml.messaging_response import Body, Message, Redirect, MessagingResponse
 from twilio.rest import Client
 
