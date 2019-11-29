@@ -122,12 +122,10 @@ def env_vars():
 def BikelisttoSMSAdvanced(bikelist: list) -> bool:
     """from this page: https://www.twilio.com/docs/sms/quickstart/python"""
 
-    # Your Account Sid and Auth Token from twilio.com/console
-    # DANGER! This is insecure. See http://twil.io/secure
     account_sid = os.environ.get('TWILIO_ACCOUNT_SID', None)
     auth_token = os.environ.get('twilio_auth_token', None)
     if auth_token is None:
-        print("auth token f*ed")
+        print("auth token isn't present, check env variables")
         exit(-1)
     SMSclient = Client(account_sid, auth_token)
     message: SMSclient
@@ -141,11 +139,11 @@ def BikelisttoSMSAdvanced(bikelist: list) -> bool:
                 body=messageData,
                 from_='+16506459228',
                 to='+447823772665')
-            # print(message.sid)
+            print(message.sid)
     return True
 
 
-def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
+def main(client: bigquery.Client, saveHTML: bool, test: bool = False) -> None:
     """main method, checks to see if its an off line 'test' or if it needs to get data from the web.
     Saves a new set of html if it does go out to get it.
     Parses the output and should then save to cloud db."""
@@ -180,6 +178,9 @@ def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
     if BikelistToInsert:
         InsertintoDB(BikelistToInsert, client)
 
+
+def __init__ ():
+    pass
 
 if __name__ == "__main__":
     test = True
