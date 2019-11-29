@@ -1,7 +1,11 @@
 .gitsecret/keys/random_seed
-!*.secret
+.gitignore
+
+# HTML
+*.html
+
+#Google service account keys
 canyonscraper-87198fc61340.json
 canyonscraper-54d54af48066.json
-*.html
 canyonscraper-ee35f3c9cec6.json
 canyonscraper-*.json
