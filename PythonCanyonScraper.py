@@ -109,7 +109,7 @@ def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
         print("ERROR: New rows have not been added, errors = " + str(errors))
         return False
     else:
-        print("rows inserted = " + str(len(Bikelist)))
+        print("bike rows successfully inserted into BQ = " + str(len(Bikelist)))
         return True
 
 
