@@ -179,8 +179,9 @@ def main(client: bigquery.Client, saveHTML: bool, test: bool = False) -> None:
         InsertintoDB(BikelistToInsert, client)
 
 
-def __init__ ():
+def __init__():
     pass
+
 
 if __name__ == "__main__":
     test = True
