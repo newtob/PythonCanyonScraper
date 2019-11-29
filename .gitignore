@@ -4,8 +4,14 @@
 # HTML
 *.html
 
-#Google service account keys
-canyonscraper-87198fc61340.json
-canyonscraper-54d54af48066.json
-canyonscraper-ee35f3c9cec6.json
+# Google service account keys
 canyonscraper-*.json
+
+# unknown files
+.gitsecret/keys/private-keys-v1.d/
+.gitsecret/keys/pubring.kbx~
+.idea/PythonCanyonScraper.iml
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
