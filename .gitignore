@@ -5,7 +5,9 @@
 *.html
 
 # Google service account keys
-canyonscraper-*.json
+/canyonscraper-ee35f3c9cec6.json
+/canyonscraper-*.json
+# canyonscraper-*.json
 
 # unknown files
 .gitsecret/keys/private-keys-v1.d/
