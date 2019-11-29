@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "canyonscraper",
+  "private_key_id": "ee35f3c9cec6d0a61e44e6f359171d1a28034ef8",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCHBUtYnG5BMBPj\nabTrrX1Ia8K0tyy/Tx/KwmLWQTN0q9yH0Db0EjU6HHEOLnH7gq0owr1GurLopzSw\nnodXTyPmvg4kXoZh6bzQBMR0lOp3xa12PHX4Mac62LyL76be5baisRqKhWkqYQgG\nOrQeupOR+7cC/dVkQGRyFHdIxk9wJ2TC4VAj0zvPPcfLP/KXjmTVng0/OovrmHjP\nBvSd1EgtQd5csSdDOu7qRgmlFqxJLZymPRt0ikPd0egZb3QFEZgXP9KloJ6zU//X\nTD+HlYZfg/APFYFA0I1DF2+eXZwwE420CtOSJ2hQIFMwhADaqaNSwkdRdmPXHFms\noZqqxLxxAgMBAAECggEAFYeAliaLZhWWdkKauKG3Ql78cvhqSC8DsL8CJ4vJ+qaU\nyYsn2A83MYbreAlr32Dc34z9xVNrx7Exs5/zkLZr0RUpCB+SafZtRvYbpUNBh8ub\ndyj43pR8R+PbXKzf/NbAInz+8GuJc1p5fxTJN8UkVri+W9nBtvSVj6M3ygDlFcrW\n9IVlbmBMpddDiekrhQETV0ucIKGzCCT43XzUs2zb3yLuHP/NsJJ8EhU03ZQOSNUW\nAEyVJcte/w4YPbV3PbWKcZUCcMPot+kvkf9pK7MpQl6XQU6ZOw4XOeVSrsNJJiUu\nwb/chLGwBmmygfmjrRyT+N5lFKspI23N5N1UQNRI4QKBgQC+6OP4uEwdAY+a7NaZ\ne5aqUlaMC8M9BJZ4Eg9kcBdOeJZm/N8xmTV4AISe5ASHJFTjqF/5tJ+iRiAorQLa\nuQ+vbRHL2nHP5/l32+wlCzQRVixa/OSokDozBhPR+lnBTciHDImhhYbfdFZP2rzI\nSJumkcPfRBcIy9S73lTqFQcRnQKBgQC1DkJHZ3fCfjZZIbatLkb+jt4t2rDixhU7\nt5XDngvG5ddiZ/SVFdsE1p25qo87tX7xZnRLrirkwSqi3Tfn20AUfOvuctX9+yzh\nXoSG+6mBcZuMQSG+JJNbXZUeDhcpSk1B9vWzFtAj7QrPpzRkD1RE1uK5s4JkVrWU\nChe/YKp35QKBgAEZ4sa6eWXpbmScXRiBh/rvgqRIJRYjAqMqp4ASzW+cbnGln7vv\ngEly51DrS8NjyEGP5Q3RpuIOuXzCkrOkQZznaiTc268xTVUNpa0JBYHcF2Fm+AKo\n4k0NCew6H25n/nIY9mpCFOcRCrZnMpONJ6isSo7tG5znYBC9VYwMFwBZAoGAFP+3\nXjK46BzdTs8jMcjJQSLuz+CqXVLeCZQMUajV8tabeXVXH6duRIxjtLH8dM9jDrp0\nSIbFwMxKlqMTpdd/AiFO99Pnz9I+7VCaDFHJ4hJ8GPNA5520XYdoERlPRGGyvjDX\nZFMEBvaqJ1VcNTK18ln9583TFLId0zKseGzMuKUCgYAC9s8SSNyG8UN7QmhFgrUb\nkVYqHpi2pEu7emxhovMt6f/nRCgq16NdSr8zPy5Pl3gPbxsoze4Pb4J9dujEatIg\n4/JLBBB2nu6RNqFDLMbv1os+Zq4gwAmjNeULRqA6RGLpl/UnvgbASlDm97iNAgl/\niDwaVgCgd0mOagDAPIm4qQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "canyon-scraper-service-acc-git@canyonscraper.iam.gserviceaccount.com",
+  "client_id": "103390827151408400455",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/canyon-scraper-service-acc-git%40canyonscraper.iam.gserviceaccount.com"
+}
