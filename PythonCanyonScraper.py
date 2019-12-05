@@ -75,6 +75,24 @@ def parseSearch(raw_html: str) -> list:
                     print("Error: Found either the orig price or sale price, but not both. Can't parse HTML correctly")
     return bikeDataListofLists
 
+def addGBPprices(bikeData: list) -> list:
+    """data struct starts of as a list of the following:[UID, BikeName, orig price, sale price, date found]
+    Then gbp_orig_price and gbp_sale_price and Percent_Discount is appended to the end"""
+    bikeDataAddition: list = bikeData
+    gbp_orig_price: int = 0
+
+    for i, bike in enumerate(bikeData):
+        gbp_orig_price = int(bike[2][1:-3])
+        bikeDataAddition[i].append(gbp_orig_price)
+
+        gbp_sale_price = int(bike[3][1:-3])
+        bikeDataAddition[i].append(gbp_sale_price)
+
+        bikeDataAddition[i].append(round((gbp_sale_price/gbp_orig_price)*100))
+
+
+    return bikeDataAddition
+
 
 def checkBikeIsntLoadedAlready(bikeData: list, client: bigquery.client.Client) -> list:
     """Gets the UID's from the database and checks the newly scraped UID's, returning only the new ones"""
@@ -94,6 +112,35 @@ def checkBikeIsntLoadedAlready(bikeData: list, client: bigquery.client.Client) -
             UniqueBikestoAdd.append(individualBike)
     return UniqueBikestoAdd
 
+def check_bike_list(Bikelist: list) -> list:
+    """check structure is sound"""
+    brokenbikedata: list = []
+
+    for bike in Bikelist:
+        # bikedatachecksout: Bool = False
+        # if type(bike[0]) is str:
+        #     if type(bike[1]) is str :
+        #         if type(bike[2]) is str:
+        #             if type(bike[3]) is str :
+        #                 if type(bike[4]) is datetime.datetime:
+        #                     bikedatachecksout = True
+        #                 else: brokenbikedata.append(bike[4])
+        #             else: brokenbikedata.append(bike[3])
+        #         else: brokenbikedata.append(bike[2])
+        #     else: brokenbikedata.append(bike[1])
+        # else: brokenbikedata.append(bike)
+        #
+        # if len(brokenbikedata) > 0 and not bikedatachecksout:
+        #     brokenbikedata.append(bike[0])
+        # bikedatachecksout = False
+
+        if type(bike[0]) is str and type(bike[1]) is str and type(bike[2]) is str and type(bike[3]) is str and type(bike[4]) is datetime.datetime:
+            pass
+        else:
+            brokenbikedata.append(bike)
+
+    return brokenbikedata
+
 
 def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
     """take a list of bike sales, output them into the DB
@@ -104,6 +151,10 @@ def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
     table = client.get_table(table_id)  # Make an API request.
     rows_to_insert = Bikelist
 
+    checked_bike_list = check_bike_list(Bikelist)
+    if len(checked_bike_list) == 0:
+        print ("ERROR, scrape failed, the following bike failed : " + checked_bike_list)
+
     errors = client.insert_rows(table, rows_to_insert)  # Make an API request.
     if errors != []:
         print("ERROR: New rows have not been added, errors = " + str(errors))
@@ -113,10 +164,10 @@ def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
         return True
 
 
-def env_vars():
-    """for secrets and CICD"""
-    # return os.environ.get('twilio_auth_token', 'Specified environment variable, twilio_auth_token, is not set.')
-    return os.environ.get('twilio_auth_token', None)
+# def env_vars():
+#     """for secrets and CICD"""
+#     # return os.environ.get('twilio_auth_token', 'Specified environment variable, twilio_auth_token, is not set.')
+#     return os.environ.get('twilio_auth_token', None)
 
 
 def BikelisttoSMSAdvanced(bikelist: list) -> bool:
@@ -167,7 +218,7 @@ def main(client: bigquery.Client, saveHTML: bool, test: bool = False) -> None:
                 out_max_file.writelines(raw_max_html)
 
     # Cycle for Aeroad Size M
-    AearoadBikelistToCheck = parseSearch(raw_html)
+    AearoadBikelistToCheck = addGBPprices(parseSearch(raw_html))
     BikelistToSMS = checkBikeIsntLoadedAlready(AearoadBikelistToCheck, client)
     if checkBikeIsntLoadedAlready:
         BikelisttoSMSAdvanced(BikelistToSMS)
