@@ -117,23 +117,6 @@ def check_bike_list(Bikelist: list) -> list:
     brokenbikedata: list = []
 
     for bike in Bikelist:
-        # bikedatachecksout: Bool = False
-        # if type(bike[0]) is str:
-        #     if type(bike[1]) is str :
-        #         if type(bike[2]) is str:
-        #             if type(bike[3]) is str :
-        #                 if type(bike[4]) is datetime.datetime:
-        #                     bikedatachecksout = True
-        #                 else: brokenbikedata.append(bike[4])
-        #             else: brokenbikedata.append(bike[3])
-        #         else: brokenbikedata.append(bike[2])
-        #     else: brokenbikedata.append(bike[1])
-        # else: brokenbikedata.append(bike)
-        #
-        # if len(brokenbikedata) > 0 and not bikedatachecksout:
-        #     brokenbikedata.append(bike[0])
-        # bikedatachecksout = False
-
         if type(bike[0]) is str and type(bike[1]) is str and type(bike[2]) is str and type(bike[3]) is str and type(bike[4]) is datetime.datetime:
             pass
         else:
@@ -152,7 +135,7 @@ def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
     rows_to_insert = Bikelist
 
     checked_bike_list = check_bike_list(Bikelist)
-    if len(checked_bike_list) == 0:
+    if not len(checked_bike_list) == 0:
         print ("ERROR, scrape failed, the following bike failed : " + checked_bike_list)
 
     errors = client.insert_rows(table, rows_to_insert)  # Make an API request.
