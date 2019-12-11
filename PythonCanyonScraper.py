@@ -80,18 +80,25 @@ def addGBPprices(bikeData: list) -> list:
     Then gbp_orig_price and gbp_sale_price and Percent_Discount is appended to the end"""
     bikeDataAddition: list = bikeData
     gbp_orig_price: int = 0
+    gbp_sale_price: int = 0
+    bike_date_list: list = []
+    newbike_list_of_list: list = []
+    bike_date_list: list = []
 
-    for i, bike in enumerate(bikeData):
-        gbp_orig_price = int(bike[2][1:-3])
-        bikeDataAddition[i].append(gbp_orig_price)
+    for i in bikeData:
+        bike_date_list.append(i)
 
-        gbp_sale_price = int(bike[3][1:-3])
-        bikeDataAddition[i].append(gbp_sale_price)
+    for i, bike in enumerate(bike_date_list):
+        gbp_orig_price = (bike[2][1:-3].replace(',', ''))
+        gbp_sale_price = (bike[3][1:-3].replace(',', ''))
+        if "rom " in gbp_sale_price:
+            gbp_sale_price = gbp_sale_price[5:]
+        gbp_orig_price = int(gbp_orig_price)
+        gbp_sale_price = int(gbp_sale_price)
 
-        bikeDataAddition[i].append(round((gbp_sale_price/gbp_orig_price)*100))
-
-
-    return bikeDataAddition
+        newbike_list_of_list.append([bike[0], bike[1], bike[2], bike[3], bike[4], gbp_orig_price, gbp_sale_price,
+                                     round((gbp_sale_price / gbp_orig_price) * 100)])
+    return newbike_list_of_list
 
 
 def checkBikeIsntLoadedAlready(bikeData: list, client: bigquery.client.Client) -> list:
@@ -136,7 +143,7 @@ def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
 
     checked_bike_list = check_bike_list(Bikelist)
     if not len(checked_bike_list) == 0:
-        print ("ERROR, scrape failed, the following bike failed : " + checked_bike_list)
+        print("ERROR, scrape failed, the following bike failed : " + checked_bike_list)
 
     errors = client.insert_rows(table, rows_to_insert)  # Make an API request.
     if errors != []:
@@ -207,7 +214,7 @@ def main(client: bigquery.Client, saveHTML: bool, test: bool = False) -> None:
         BikelisttoSMSAdvanced(BikelistToSMS)
 
     # Cycle for All bikes
-    BikelistToCheck = parseSearch(raw_max_html)
+    BikelistToCheck = addGBPprices(parseSearch(raw_max_html))
     BikelistToInsert = checkBikeIsntLoadedAlready(BikelistToCheck, client)
     if BikelistToInsert:
         InsertintoDB(BikelistToInsert, client)
@@ -218,10 +225,10 @@ def __init__():
 
 
 if __name__ == "__main__":
-    test = True
-    # test = False
-    myClient = bigquery.Client.from_service_account_json('./canyonscraper-54d54af48066.json')
-    main(myClient, test, True)
+    # test = True
+    test = False
+    myClient = bigquery.Client.from_service_account_json('./canyonscraper-ee35f3c9cec6.json')
+    main(myClient, test, False)
 
 
 def PythonCanyonScraper(event, context) -> None:
