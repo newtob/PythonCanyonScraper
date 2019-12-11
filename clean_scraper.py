@@ -37,7 +37,7 @@ def get_bigquery_bike_list(client: bigquery.client.Client) -> list:
     return rows
 
 
-def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
+def InsertintoDB(Bikelist: object, client: object) -> object:
     """take a list of bike sales, output them into the DB
     Setup DB connection, for loop through insert rows
     """
@@ -61,11 +61,15 @@ def main(client: bigquery.Client) -> None:
     2) addGBPprices 
     3) InsertintoDB"""
 
+    print("get bikes from bigquery")
     bikes = get_bigquery_bike_list(client)
+    print("add prices")
     bikes_gbp = addGBPprices(bikes)
+
     for i in bikes_gbp:
         print(i)
     print(len(bikes_gbp))
+
     InsertintoDB(bikes_gbp, client)
 
 

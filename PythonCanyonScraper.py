@@ -105,7 +105,7 @@ def checkBikeIsntLoadedAlready(bikeData: list, client: bigquery.client.Client) -
     """Gets the UID's from the database and checks the newly scraped UID's, returning only the new ones"""
 
     QUERY = (
-        'SELECT UID FROM `CanyonOutletBikeSaleData.CanyonOutletBikeSaleDataTable` ')
+        'SELECT UID FROM `CanyonOutletBikeSaleData.CanyonOutletGBPBikeSaleDataTable` ')
     query_job = client.query(QUERY)  # API request
     rows = query_job.result()  # Waits for query to finish
 
@@ -137,7 +137,7 @@ def InsertintoDB(Bikelist: list, client: bigquery.client.Client) -> bool:
     Setup DB connection, for loop through insert rows
     """
 
-    table_id = "CanyonOutletBikeSaleData.CanyonOutletBikeSaleDataTable"
+    table_id = "CanyonOutletBikeSaleData.CanyonOutletGBPBikeSaleDataTable"
     table = client.get_table(table_id)  # Make an API request.
     rows_to_insert = Bikelist
 
