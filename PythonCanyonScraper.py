@@ -8,11 +8,12 @@ from requests import get
 from requests.exceptions import RequestException
 from twilio.rest import Client
 
-from opentelemetry import trace
-from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.trace import Link
+#OT setup - the second one not importing!? 11/Nov/2021
+# from opentelemetry import trace
+# from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
+# from opentelemetry.sdk.trace import TracerProvider
+# from opentelemetry.sdk.trace.export import BatchSpanProcessor
+# from opentelemetry.trace import Link
 
 
 def simple_get(url: str) -> str:
@@ -58,13 +59,11 @@ def parseSearch(raw_html: str) -> list:
     print('in parseSearch just before the html.select(span) bit')
 
     #new routine
-    divCounterInt:Int = 0
+    #The following two lines have been commented, because i don't understand what they wehre doing, 11.Nov.2021
+    divCounterInt = 0
 
-
-    html.find_all("div", class_="productTile__productSummaryLeft")
-
+    #html.find_all("div",class="productTile__productSummaryLeft")
     #TODO the above command SHOULD WORK. but does not. please, please make it work.
-
 
     for s in html.find_all(itemtype='http://schema.org/Product'):
         print('found something')
@@ -188,15 +187,37 @@ def BikelisttoSMSAdvanced(bikelist: list) -> bool:
             # print(message.sid)
     return True
 
+def setupOT ():
+    tracer_provider = TracerProvider()
+    cloud_trace_exporter = CloudTraceSpanExporter()
+    tracer_provider.add_span_processor(
+        # BatchSpanProcessor buffers spans and sends them in batches in a
+        # background thread. The default parameters are sensible, but can tweaked
+        BatchSpanProcessor(cloud_trace_exporter)
+    )
+    trace.set_tracer_provider(tracer_provider)
+
+    tracer = trace.get_tracer(__name__)
+    return tracer
+
 
 def main(client: bigquery.Client, test: bool, saveHTML: bool) -> None:
     """main method, checks to see if its an off line 'test' or if it needs to get data from the web.
     Saves a new set of html if it does go out to get it.
     Parses the output and should then save to cloud db."""
+    #tracer = setupOT ()
     if test:
         print('im in test loop')
         with open('latestAeroadSizeM2.html', 'r') as file:
             raw_html = str(file.read())
+            # with tracer.start_span("html read m2_with_attribute") as current_span:
+            #     raw_html = str(file.read())
+            #     # Add attributes to the spans
+            #     current_span.set_attribute("string_attribute", "read html m2")
+            #     current_span.set_attribute("int_attribute_stage", 1)
+            #     with tracer.start_as_current_span("html read m2 event") as current_span:
+            #         current_span.add_event(name="html read m2 event finished")
+
         with open('latestAllBikes2.html', 'r') as fileAll:
             raw_max_html = str(fileAll.read())
     else:
