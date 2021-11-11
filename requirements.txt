@@ -1,4 +1,4 @@
-beautifulsoup4>=4.8.1
+beautifulsoup4>=4.9.3
 bs4>=0.0.1
 google-api-core>=1.14.3
 google-auth>=1.7.1
@@ -11,3 +11,6 @@ requests>=2.22.0
 soupsieve>=1.9.5
 urllib3>=1.25.7
 twilio>=6.33.1
+opentelemetry-api>=1.6.2
+opentelemetry-sdk>=1.6.2
+opentelemetry-exporter-gcp-trace>=1.0.0
